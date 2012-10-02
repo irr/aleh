@@ -1,0 +1,7 @@
+Makefile
+out/
+aleh.Makefile
+aleh.target.mk
+.sconsign.dblite
+aleh
+aleh.o
