@@ -227,12 +227,8 @@ namespace aleh {
 
     int event_loop(aleh_config *cfg) {
         const int fd = socket(AF_INET, SOCK_STREAM, 0);
-        if (fd < 0) 
-            return errno;
-
-        const int one = 1;
-        int r = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *)&one, sizeof(int));
-        if (r < 0) 
+        const int aux = 1;
+        if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *)&aux, sizeof(int)) < 0) 
             return errno;
 
         struct sockaddr_in addr;
@@ -246,17 +242,14 @@ namespace aleh {
         addr.sin_family = AF_INET;
         addr.sin_port = htons(cfg->http.port);
 
-        r = bind(fd, (struct sockaddr*)&addr, sizeof(addr));
-        if (r < 0) 
+        if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
             return errno;
 
-        r = listen(fd, cfg->http.backlog);
-        if (r < 0) 
+        if (listen(fd, cfg->http.backlog) < 0)
             return errno;
 
         const int flags = fcntl(fd, F_GETFL, 0);
-        if ((flags < 0)
-              || (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0))
+        if ((flags < 0) || (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0))
             return errno;
 
         vector<thread> threads;
@@ -272,8 +265,7 @@ namespace aleh {
             if (NULL == httpd) 
                 return -1;
 
-            r = evhttp_accept_socket(httpd, fd);
-            if (r != 0) 
+            if (evhttp_accept_socket(httpd, fd) != 0) 
                 return -1;
 
             evhttp_set_timeout (httpd, cfg->http.timeout_secs);     
